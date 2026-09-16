@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+package banking;
+
+// Operation 1
+message AccountStatusRequest {
+  string account_number = 1;
+}
+
+message AccountStatusResponse {
+  string account_number = 1;
+  string account_holder = 2;
+  string status = 3;
+  double daily_limit = 4;
+}
+
+// Operation 2
+message RiskEvaluationRequest {
+  string account_number = 1;
+  double amount = 2;
+  string destination_country = 3;
+}
+
+message RiskEvaluationResponse {
+  string evaluation_id = 1;
+  int32 risk_score = 2;
+  bool is_approved = 3;
+  string reason = 4;
+}
+
+// Operation 3
+message FreezeAccountRequest {
+  string account_number = 1;
+  string reason = 2;
+}
+
+message FreezeAccountResponse {
+  string account_number = 1;
+  bool is_frozen = 2;
+  string timestamp = 3;
+}
+
+service BankingEngine {
+  rpc GetAccountStatus (AccountStatusRequest) returns (AccountStatusResponse);
+  rpc EvaluateRisk (RiskEvaluationRequest) returns (RiskEvaluationResponse);
+  rpc FreezeAccount (FreezeAccountRequest) returns (FreezeAccountResponse);
+}
