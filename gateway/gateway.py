@@ -13,6 +13,7 @@ from wsgiref.simple_server import make_server
 import banking_service_pb2
 import banking_service_pb2_grpc
 
+#KeshalaHasarangi
 class SoapAccountStatus(ComplexModel):
     __namespace__ = "http://banking.legacy.com/soap"
     account_number = Unicode
@@ -33,6 +34,7 @@ class SoapFreezeResult(ComplexModel):
     is_frozen = Boolean
     timestamp = Unicode
 
+#RashiniWeerasinghe15
 class BankingGatewayService(ServiceBase):
 
     @staticmethod
