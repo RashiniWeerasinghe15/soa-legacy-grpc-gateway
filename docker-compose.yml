@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  grpc-server:
+    build:
+      context: .
+      dockerfile: grpc_server/Dockerfile
+    container_name: core-banking-grpc
+    ports:
+      - "50051:50051"
+
+  gateway:
+    build:
+      context: .
+      dockerfile: gateway/Dockerfile
+    container_name: translating-gateway
+    ports:
+      - "8000:8000"
+    environment:
+      - GRPC_TARGET=grpc-server:50051
+    depends_on:
+      - grpc-server
+
+  soap-client-tests:
+    build:
+      context: .
+      dockerfile: soap_client/Dockerfile
+    container_name: legacy-soap-test-runner
+    environment:
+      - WSDL_HOST=http://gateway:8000/?wsdl
+    depends_on:
+      - gateway

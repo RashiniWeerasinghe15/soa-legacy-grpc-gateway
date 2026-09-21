@@ -1,6 +1,7 @@
 import sys
 import os
 
+# Ensure the root directory is visible for generated protobuf imports
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import grpc
@@ -13,6 +14,7 @@ from wsgiref.simple_server import make_server
 import banking_service_pb2
 import banking_service_pb2_grpc
 
+# --- SOAP Output Types ---
 class SoapAccountStatus(ComplexModel):
     __namespace__ = "http://banking.legacy.com/soap"
     account_number = Unicode
@@ -33,10 +35,12 @@ class SoapFreezeResult(ComplexModel):
     is_frozen = Boolean
     timestamp = Unicode
 
+# --- Translating Gateway Service ---
 class BankingGatewayService(ServiceBase):
 
     @staticmethod
     def _handle_grpc_error(e):
+        """Translates gRPC StatusCode into standard SOAP Fault codes."""
         code = e.code()
         details = e.details()
         if code == grpc.StatusCode.INVALID_ARGUMENT:
@@ -49,7 +53,8 @@ class BankingGatewayService(ServiceBase):
     @rpc(Unicode, _returns=SoapAccountStatus)
     def GetAccountStatus(ctx, account_number):
         try:
-            with grpc.insecure_channel("localhost:50051") as channel:
+            grpc_target = os.getenv("GRPC_TARGET", "localhost:50051")
+            with grpc.insecure_channel(grpc_target) as channel:
                 stub = banking_service_pb2_grpc.BankingEngineStub(channel)
                 res = stub.GetAccountStatus(banking_service_pb2.AccountStatusRequest(account_number=account_number))
                 return SoapAccountStatus(
@@ -64,7 +69,8 @@ class BankingGatewayService(ServiceBase):
     @rpc(Unicode, Double, Unicode, _returns=SoapRiskResult)
     def EvaluateTransactionRisk(ctx, account_number, amount, destination_country):
         try:
-            with grpc.insecure_channel("localhost:50051") as channel:
+            grpc_target = os.getenv("GRPC_TARGET", "localhost:50051")
+            with grpc.insecure_channel(grpc_target) as channel:
                 stub = banking_service_pb2_grpc.BankingEngineStub(channel)
                 res = stub.EvaluateRisk(banking_service_pb2.RiskEvaluationRequest(
                     account_number=account_number,
@@ -83,7 +89,8 @@ class BankingGatewayService(ServiceBase):
     @rpc(Unicode, Unicode, _returns=SoapFreezeResult)
     def FreezeAccount(ctx, account_number, reason):
         try:
-            with grpc.insecure_channel("localhost:50051") as channel:
+            grpc_target = os.getenv("GRPC_TARGET", "localhost:50051")
+            with grpc.insecure_channel(grpc_target) as channel:
                 stub = banking_service_pb2_grpc.BankingEngineStub(channel)
                 res = stub.FreezeAccount(banking_service_pb2.FreezeAccountRequest(
                     account_number=account_number,
